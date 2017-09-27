@@ -92,7 +92,7 @@ public class RecyclerTest {
                 maxCapacity >= recycler.threadLocalCapacity());
     }
 
-    @Test
+    @Test   // 不同线程回收对象,是回收给自己用了?
     public void testRecycleAtDifferentThread() throws Exception {
         final Recycler<HandledObject> recycler = new Recycler<HandledObject>(256, 10, 2, 10) {
             @Override
@@ -101,9 +101,9 @@ public class RecyclerTest {
             }
         };
 
-        final HandledObject o = recycler.get();
-        final HandledObject o2 = recycler.get();
-        final Thread thread = new Thread() {
+        final HandledObject o = recycler.get();     //这里获取不到, 会创建一个对象
+        final HandledObject o2 = recycler.get();    //这里获取到了, 但是是上面方法创建的对象.
+        final Thread thread = new Thread() {        //在另外一个线程中回收对象
             @Override
             public void run() {
                 o.recycle();
