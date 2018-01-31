@@ -25,11 +25,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A {@link ThreadFactory} implementation with a simple naming rule.
  */
-public class DefaultThreadFactory implements ThreadFactory {
+public class DefaultThreadFactory implements ThreadFactory {            // 默认的线程工厂
 
-    private static final AtomicInteger poolId = new AtomicInteger();
+    private static final AtomicInteger poolId = new AtomicInteger();    // 线程池id, 这个是static变量
 
-    private final AtomicInteger nextId = new AtomicInteger();
+    private final AtomicInteger nextId = new AtomicInteger();           // 线程id, 这个是实例变量
     private final String prefix;
     private final boolean daemon;
     private final int priority;
@@ -124,7 +124,7 @@ public class DefaultThreadFactory implements ThreadFactory {
         return new FastThreadLocalThread(threadGroup, r, name);
     }
 
-    private static final class DefaultRunnableDecorator implements Runnable {
+    private static final class DefaultRunnableDecorator implements Runnable {   // 对Runnable的装饰
 
         private final Runnable r;
 
@@ -137,7 +137,7 @@ public class DefaultThreadFactory implements ThreadFactory {
             try {
                 r.run();
             } finally {
-                FastThreadLocal.removeAll();
+                FastThreadLocal.removeAll();                                    // 为了清除FastThreadLocal
             }
         }
     }

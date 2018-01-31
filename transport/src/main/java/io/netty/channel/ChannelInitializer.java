@@ -25,12 +25,12 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * A special {@link ChannelInboundHandler} which offers an easy way to initialize a {@link Channel} once it was
- * registered to its {@link EventLoop}.
+ * A special {@link ChannelInboundHandler} which offers an easy way to initialize a {@link Channel} once it was // 一种特殊的ChannelInboundHandler
+ * registered to its {@link EventLoop}.                                                                         // 用于在channel注册到EventLoop时,进行一些初始化工作
  *
- * Implementations are most often used in the context of {@link Bootstrap#handler(ChannelHandler)} ,
- * {@link ServerBootstrap#handler(ChannelHandler)} and {@link ServerBootstrap#childHandler(ChannelHandler)} to
- * setup the {@link ChannelPipeline} of a {@link Channel}.
+ * Implementations are most often used in the context of {@link Bootstrap#handler(ChannelHandler)} ,            // 常用于Bootstrap.handler()
+ * {@link ServerBootstrap#handler(ChannelHandler)} and {@link ServerBootstrap#childHandler(ChannelHandler)} to  // 或者ServerBootstrap#handler() / ServerBootstrap#childHandler()
+ * setup the {@link ChannelPipeline} of a {@link Channel}.                                                      // 为了初始化channel的ChannelPipeline
  *
  * <pre>
  *
@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentMap;
  * bootstrap.childHandler(new MyChannelInitializer());
  * ...
  * </pre>
- * Be aware that this class is marked as {@link Sharable} and so the implementation must be safe to be re-used.
+ * Be aware that this class is marked as {@link Sharable} and so the implementation must be safe to be re-used. // 注意这个类被标记为Sharable
  *
  * @param <C>   A sub-type of {@link Channel}
  */

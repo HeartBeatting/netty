@@ -22,13 +22,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The {@link EventExecutorGroup} is responsible for providing the {@link EventExecutor}'s to use
- * via its {@link #next()} method. Besides this, it is also responsible for handling their
+ * The {@link EventExecutorGroup} is responsible for providing the {@link EventExecutor}'s to use   // EventExecutorGroup通过next方法返回下一个EventExecutor
+ * via its {@link #next()} method. Besides this, it is also responsible for handling their          // 除此之外,也负责处理他们的生命周期 和 允许用一个通用模式关闭他们
  * life-cycle and allows shutting them down in a global fashion.
  *
  */
-public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<EventExecutor> {
-
+public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<EventExecutor> {     // 这里继承了 Jdk的 ScheduledExecutorService 和Iterable, 其实是对ScheduledExecutorService的增强
+                                                                                                    // 所以是可以定时执行和迭代的
     /**
      * Returns {@code true} if and only if all {@link EventExecutor}s managed by this {@link EventExecutorGroup}
      * are being {@linkplain #shutdownGracefully() shut down gracefully} or was {@linkplain #isShutdown() shut down}.
@@ -40,14 +40,14 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
      *
      * @return the {@link #terminationFuture()}
      */
-    Future<?> shutdownGracefully();
+    Future<?> shutdownGracefully();                                                                 // 这里自己实现了一个优雅停机方法
 
     /**
-     * Signals this executor that the caller wants the executor to be shut down.  Once this method is called,
-     * {@link #isShuttingDown()} starts to return {@code true}, and the executor prepares to shut itself down.
-     * Unlike {@link #shutdown()}, graceful shutdown ensures that no tasks are submitted for <i>'the quiet period'</i>
-     * (usually a couple seconds) before it shuts itself down.  If a task is submitted during the quiet period,
-     * it is guaranteed to be accepted and the quiet period will start over.
+     * Signals this executor that the caller wants the executor to be shut down.  Once this method is called,       //通知线程池,caller希望他关闭; 一旦这个方法调用了,
+     * {@link #isShuttingDown()} starts to return {@code true}, and the executor prepares to shut itself down.      //isShuttingDown返回true,表示关闭中了,线程池准备关闭自己
+     * Unlike {@link #shutdown()}, graceful shutdown ensures that no tasks are submitted for <i>'the quiet period'</i>  //优雅停机保证quiet period没有任务过来,才会关闭自己
+     * (usually a couple seconds) before it shuts itself down.  If a task is submitted during the quiet period,     //如果这个过程中,提交了一个新任务
+     * it is guaranteed to be accepted and the quiet period will start over.                                        //会保证接收这个任务,停机的这个过程会重新开始
      *
      * @param quietPeriod the quiet period as described in the documentation
      * @param timeout     the maximum amount of time to wait until the executor is {@linkplain #shutdown()}
@@ -59,7 +59,7 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
     Future<?> shutdownGracefully(long quietPeriod, long timeout, TimeUnit unit);
 
     /**
-     * Returns the {@link Future} which is notified when all {@link EventExecutor}s managed by this
+     * Returns the {@link Future} which is notified when all {@link EventExecutor}s managed by this     //所有EventExecutor都关闭了,返回Future
      * {@link EventExecutorGroup} have been terminated.
      */
     Future<?> terminationFuture();
@@ -81,13 +81,13 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
     /**
      * Returns one of the {@link EventExecutor}s managed by this {@link EventExecutorGroup}.
      */
-    EventExecutor next();
+    EventExecutor next();                   //用于获取下一个
 
     @Override
-    Iterator<EventExecutor> iterator();
+    Iterator<EventExecutor> iterator();     //覆盖的Iterator接口
 
     @Override
-    Future<?> submit(Runnable task);
+    Future<?> submit(Runnable task);        // 下面都是覆盖的ScheduledExecutorService, 对原来的实现做了增强
 
     @Override
     <T> Future<T> submit(Runnable task, T result);

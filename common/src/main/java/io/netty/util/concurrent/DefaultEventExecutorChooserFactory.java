@@ -25,14 +25,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 @UnstableApi
 public final class DefaultEventExecutorChooserFactory implements EventExecutorChooserFactory {
 
-    public static final DefaultEventExecutorChooserFactory INSTANCE = new DefaultEventExecutorChooserFactory();
+    public static final DefaultEventExecutorChooserFactory INSTANCE = new DefaultEventExecutorChooserFactory();     // 这是一个默认的实例
 
     private DefaultEventExecutorChooserFactory() { }
 
     @SuppressWarnings("unchecked")
     @Override
     public EventExecutorChooser newChooser(EventExecutor[] executors) {
-        if (isPowerOfTwo(executors.length)) {
+        if (isPowerOfTwo(executors.length)) {   // 数组长度不一样,选择器还不一样
             return new PowerOfTwoEventExecutorChooser(executors);
         } else {
             return new GenericEventExecutorChooser(executors);
@@ -52,9 +52,9 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
         }
 
         @Override
-        public EventExecutor next() {
-            return executors[idx.getAndIncrement() & executors.length - 1];
-        }
+        public EventExecutor next() {   // next这一步是什么意思呢? 比如executors.length为8, 8-1=7 (111)
+            return executors[idx.getAndIncrement() & executors.length - 1]; // 其实idx每次自增,然后对8取模,所以就是一直在0到7之间了轮询了.
+        }   // 0-7, 1
     }
 
     private static final class GenericEventExecutorChooser implements EventExecutorChooser {
@@ -67,7 +67,7 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
 
         @Override
         public EventExecutor next() {
-            return executors[Math.abs(idx.getAndIncrement() % executors.length)];
+            return executors[Math.abs(idx.getAndIncrement() % executors.length)];   // 这里直接用的取模,相比较上面会稍微慢一点,毕竟位操作更快.
         }
     }
 }

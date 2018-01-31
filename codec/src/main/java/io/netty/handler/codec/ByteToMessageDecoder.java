@@ -27,11 +27,11 @@ import io.netty.util.internal.StringUtil;
 import java.util.List;
 
 /**
- * {@link ChannelInboundHandlerAdapter} which decodes bytes in a stream-like fashion from one {@link ByteBuf} to an
+ * {@link ChannelInboundHandlerAdapter} which decodes bytes in a stream-like fashion from one {@link ByteBuf} to an     // 流式 将字节解码成消息类型
  * other Message type.
  *
- * For example here is an implementation which reads all readable bytes from
- * the input {@link ByteBuf} and create a new {@link ByteBuf}.
+ * For example here is an implementation which reads all readable bytes from        // 下面是一个例子
+ * the input {@link ByteBuf} and create a new {@link ByteBuf}.                      // 将所有可读的字节解码成一个ByteBuf
  *
  * <pre>
  *     public class SquareDecoder extends {@link ByteToMessageDecoder} {
@@ -43,29 +43,29 @@ import java.util.List;
  *     }
  * </pre>
  *
- * <h3>Frame detection</h3>
+ * <h3>Frame detection</h3>                                                                                     // 帧检测
  * <p>
- * Generally frame detection should be handled earlier in the pipeline by adding a
+ * Generally frame detection should be handled earlier in the pipeline by adding a                              // 一般检测应该在pipeline中最先执行这些decoder
  * {@link DelimiterBasedFrameDecoder}, {@link FixedLengthFrameDecoder}, {@link LengthFieldBasedFrameDecoder},
  * or {@link LineBasedFrameDecoder}.
  * <p>
- * If a custom frame decoder is required, then one needs to be careful when implementing
- * one with {@link ByteToMessageDecoder}. Ensure there are enough bytes in the buffer for a
- * complete frame by checking {@link ByteBuf#readableBytes()}. If there are not enough bytes
- * for a complete frame, return without modifying the reader index to allow more bytes to arrive.
+ * If a custom frame decoder is required, then one needs to be careful when implementing                        // 如果需要一个自定义的decoder
+ * one with {@link ByteToMessageDecoder}. Ensure there are enough bytes in the buffer for a                     // 需要注意实现ByteToMessageDecoder
+ * complete frame by checking {@link ByteBuf#readableBytes()}. If there are not enough bytes                    // 需要通过ByteBuf#readableBytes()检测,保证buffer中有足够的字节,用于一个完整的frame
+ * for a complete frame, return without modifying the reader index to allow more bytes to arrive.               // 直接返回,不修改读索引,允许更多的字节读取进来
  * <p>
- * To check for complete frames without modifying the reader index, use methods like {@link ByteBuf#getInt(int)}.
- * One <strong>MUST</strong> use the reader index when using methods like {@link ByteBuf#getInt(int)}.
- * For example calling <tt>in.getInt(0)</tt> is assuming the frame starts at the beginning of the buffer, which
- * is not always the case. Use <tt>in.getInt(in.readerIndex())</tt> instead.
- * <h3>Pitfalls</h3>
+ * To check for complete frames without modifying the reader index, use methods like {@link ByteBuf#getInt(int)}.   // ByteBuf#getInt(int),使用这个方法
+ * One <strong>MUST</strong> use the reader index when using methods like {@link ByteBuf#getInt(int)}.          // 当使用方法ByteBuf#getInt(int)时必须使用reader index
+ * For example calling <tt>in.getInt(0)</tt> is assuming the frame starts at the beginning of the buffer, which // 例如调用in.getInt(0)假设从buffer的开头处开始
+ * is not always the case. Use <tt>in.getInt(in.readerIndex())</tt> instead.                                    // 可以替换使用in.getInt(in.readerIndex())
+ * <h3>Pitfalls</h3>    // 陷阱
  * <p>
- * Be aware that sub-classes of {@link ByteToMessageDecoder} <strong>MUST NOT</strong>
- * annotated with {@link @Sharable}.
+ * Be aware that sub-classes of {@link ByteToMessageDecoder} <strong>MUST NOT</strong>                          // 注意ByteToMessageDecoder的子类不能加上Sharable注解
+ * annotated with {@link @Sharable}.                                                                            // 说明它不是线程安全的
  * <p>
- * Some methods such as {@link ByteBuf#readBytes(int)} will cause a memory leak if the returned buffer
- * is not released or added to the <tt>out</tt> {@link List}. Use derived buffers like {@link ByteBuf#readSlice(int)}
- * to avoid leaking memory.
+ * Some methods such as {@link ByteBuf#readBytes(int)} will cause a memory leak if the returned buffer          // 如果没有调用release释放或者放到out中,有些方法可能会造成内存泄露,
+ * is not released or added to the <tt>out</tt> {@link List}. Use derived buffers like {@link ByteBuf#readSlice(int)}   // 比如ByteBuf#readBytes(int)方法
+ * to avoid leaking memory.                                                                                             // 使用衍生的buffer,比如ByteBuf#readSlice(int)避免内存泄露
  */
 public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter {
 
@@ -406,7 +406,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
      */
     protected void callDecode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         try {
-            while (in.isReadable()) {
+            while (in.isReadable()) {   // 没有可读内容也跳出循环.
                 int outSize = out.size();
 
                 if (outSize > 0) {
@@ -436,7 +436,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                 }
 
                 if (outSize == out.size()) {
-                    if (oldInputLength == in.readableBytes()) {
+                    if (oldInputLength == in.readableBytes()) {     // 没有读取到内容,也跳出循环
                         break;
                     } else {
                         continue;
@@ -461,16 +461,16 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     }
 
     /**
-     * Decode the from one {@link ByteBuf} to an other. This method will be called till either the input
-     * {@link ByteBuf} has nothing to read when return from this method or till nothing was read from the input
-     * {@link ByteBuf}.
+     * Decode the from one {@link ByteBuf} to an other. This method will be called till either the input            // 将ByteBuf解码为另一个对象, 这个方法将一直会被调用
+     * {@link ByteBuf} has nothing to read when return from this method or till nothing was read from the input     // 直到没有可读的内容或者读取到的内容为空
+     * {@link ByteBuf}.                                                                                             // @see io.netty.handler.codec.ByteToMessageDecoder#callDecode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List)
      *
      * @param ctx           the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
      * @param in            the {@link ByteBuf} from which to read data
      * @param out           the {@link List} to which decoded messages should be added
      * @throws Exception    is thrown if an error occurs
      */
-    protected abstract void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception;
+    protected abstract void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception;       // 唯一需要覆盖重写的方法
 
     /**
      * Decode the from one {@link ByteBuf} to an other. This method will be called till either the input

@@ -378,15 +378,15 @@ public final class Unpooled {
     }
 
     /**
-     * Creates a new big-endian buffer whose content is a copy of the
-     * specified {@code array}.  The new buffer's {@code readerIndex} and
+     * Creates a new big-endian buffer whose content is a copy of the           // 创建一个新的buffer,内容是array的一个拷贝!
+     * specified {@code array}.  The new buffer's {@code readerIndex} and       // 读写索引都从0开始
      * {@code writerIndex} are {@code 0} and {@code array.length} respectively.
      */
     public static ByteBuf copiedBuffer(byte[] array) {
         if (array.length == 0) {
             return EMPTY_BUFFER;
         }
-        return wrappedBuffer(array.clone());
+        return wrappedBuffer(array.clone());    //clone一份,然后包裹成ByteBuf
     }
 
     /**

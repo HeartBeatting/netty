@@ -22,8 +22,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates a public API that can change at any time (even in minor/bugfix releases).
- *
+ * Indicates a public API that can change at any time (even in minor/bugfix releases).  //标记一个public的API方法, 可能在后续任何时候改变, 甚至在一个release中的
+ *                                                                                      //说明这个接口是不稳定的,外部不建议使用; 没有考虑向后兼容性的.
  * Usage guidelines:
  *
  * <ol>

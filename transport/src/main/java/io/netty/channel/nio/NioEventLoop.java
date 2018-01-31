@@ -51,7 +51,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * {@link SingleThreadEventLoop} implementation which register the {@link Channel}'s to a
  * {@link Selector} and so does the multi-plexing of these in the event loop.
- *
+ * NioEventLoop 父类继承了很多接口,比如有ScheduledExecutorService,是对JDK定时调度线程池的增强,我们看下做了哪些增强.
+ * 可以用IDEA工具看下NioEventLoop的继承关系.
  */
 public final class NioEventLoop extends SingleThreadEventLoop {
 
@@ -74,11 +75,11 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     private final Callable<Integer> pendingTasksCallable = new Callable<Integer>() {
         @Override
         public Integer call() throws Exception {
-            return NioEventLoop.super.pendingTasks();
+            return NioEventLoop.super.pendingTasks();   // 返回阻塞的任务数量
         }
     };
 
-    // Workaround for JDK NIO bug.
+    // Workaround for JDK NIO bug.  // 用于解决jdk NIO bug
     //
     // See:
     // - http://bugs.sun.com/view_bug.do?bug_id=6427854
@@ -116,11 +117,11 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     /**
      * The NIO {@link Selector}.
      */
-    private Selector selector;
-    private Selector unwrappedSelector;
-    private SelectedSelectionKeySet selectedKeys;
+    private Selector selector;                      // jdk的多路复用器
+    private Selector unwrappedSelector;             // 未包装的多路复用器
+    private SelectedSelectionKeySet selectedKeys;   // 这个是注册到当前EventLoop的key,循环检查就是这个集合
 
-    private final SelectorProvider provider;
+    private final SelectorProvider provider;        // 这个是jdk的SelectorProvider, 用于生成SelectorProvider.
 
     /**
      * Boolean that controls determines if a blocked Selector.select should
@@ -130,7 +131,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      */
     private final AtomicBoolean wakenUp = new AtomicBoolean();
 
-    private final SelectStrategy selectStrategy;
+    private final SelectStrategy selectStrategy;    // 选择策略
 
     private volatile int ioRatio = 50;
     private int cancelledKeys;

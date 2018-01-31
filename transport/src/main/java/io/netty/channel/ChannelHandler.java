@@ -199,15 +199,15 @@ public interface ChannelHandler {
     void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception;
 
     /**
-     * Indicates that the same instance of the annotated {@link ChannelHandler}
-     * can be added to one or more {@link ChannelPipeline}s multiple times
+     * Indicates that the same instance of the annotated {@link ChannelHandler}     // 表明: ChannelHandler可以被添加到一个或者多个ChannelPipeline.
+     * can be added to one or more {@link ChannelPipeline}s multiple times          // 多次, 并且没有竞争的.
      * without a race condition.
      * <p>
-     * If this annotation is not specified, you have to create a new handler
-     * instance every time you add it to a pipeline because it has unshared
+     * If this annotation is not specified, you have to create a new handler        // 如果没有这个注解,
+     * instance every time you add it to a pipeline because it has unshared         // 每次你添加到一个pipeline都必须new一个,因为他不是线程安全的.
      * state such as member variables.
      * <p>
-     * This annotation is provided for documentation purpose, just like
+     * This annotation is provided for documentation purpose, just like             // 这是用于文档描述的注解
      * <a href="http://www.javaconcurrencyinpractice.com/annotations/doc/">the JCIP annotations</a>.
      */
     @Inherited

@@ -1473,10 +1473,10 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract double readDouble();
 
     /**
-     * Transfers this buffer's data to a newly created buffer starting at
+     * Transfers this buffer's data to a newly created buffer starting at       // 将buffer的数据复制到一个新创建的buffer
      * the current {@code readerIndex} and increases the {@code readerIndex}
      * by the number of the transferred bytes (= {@code length}).
-     * The returned buffer's {@code readerIndex} and {@code writerIndex} are
+     * The returned buffer's {@code readerIndex} and {@code writerIndex} are    // 返回的新创建的buffer,读索引是0,写索引是length
      * {@code 0} and {@code length} respectively.
      *
      * @param length the number of bytes to transfer
@@ -1489,12 +1489,12 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf readBytes(int length);
 
     /**
-     * Returns a new slice of this buffer's sub-region starting at the current
-     * {@code readerIndex} and increases the {@code readerIndex} by the size
+     * Returns a new slice of this buffer's sub-region starting at the current      // 返回当前buffer的一个新的切片
+     * {@code readerIndex} and increases the {@code readerIndex} by the size        // 从当前的readerIndex开始,并且readerIndex加上length
      * of the new slice (= {@code length}).
      * <p>
-     * Also be aware that this method will NOT call {@link #retain()} and so the
-     * reference count will NOT be increased.
+     * Also be aware that this method will NOT call {@link #retain()} and so the    // 也要注意的是,这个方法不会调用retain()
+     * reference count will NOT be increased.                                       // reference count不会增加, 所以当其他地方引用释放了,就会被回收的
      *
      * @param length the size of the new slice
      *
@@ -1571,8 +1571,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf readBytes(ByteBuf dst, int dstIndex, int length);
 
     /**
-     * Transfers this buffer's data to the specified destination starting at
-     * the current {@code readerIndex} and increases the {@code readerIndex}
+     * Transfers this buffer's data to the specified destination starting at        // 将ByteBuf缓冲中的数据读取到dst中
+     * the current {@code readerIndex} and increases the {@code readerIndex}        // 从当前的readerIndex位置开始,并且升级readerIndex
      * by the number of the transferred bytes (= {@code dst.length}).
      *
      * @throws IndexOutOfBoundsException
@@ -1854,7 +1854,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf writeBytes(ByteBuf src, int srcIndex, int length);
 
     /**
-     * Transfers the specified source array's data to this buffer starting at
+     * Transfers the specified source array's data to this buffer starting at       // 将src的字节,写入到ByteBuf的缓冲中
      * the current {@code writerIndex} and increases the {@code writerIndex}
      * by the number of the transferred bytes (= {@code src.length}).
      *
