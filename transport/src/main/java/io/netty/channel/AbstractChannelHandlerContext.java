@@ -39,8 +39,8 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
         implements ChannelHandlerContext, ResourceLeakHint {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractChannelHandlerContext.class);
-    volatile AbstractChannelHandlerContext next;
-    volatile AbstractChannelHandlerContext prev;
+    volatile AbstractChannelHandlerContext next;    // netty的ChannelHandlerContext也是一个双向链表,可以从头往后,从后往前遍历.
+    volatile AbstractChannelHandlerContext prev;    // todo 这里的责任链就是靠context串联起来的,后面再确认下.
 
     private static final AtomicIntegerFieldUpdater<AbstractChannelHandlerContext> HANDLER_STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(AbstractChannelHandlerContext.class, "handlerState");
@@ -63,7 +63,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
      */
     private static final int INIT = 0;
 
-    private final boolean inbound;
+    private final boolean inbound;      // 就是用来标记是否是进入handler
     private final boolean outbound;
     private final DefaultChannelPipeline pipeline;
     private final String name;

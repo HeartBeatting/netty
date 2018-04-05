@@ -30,7 +30,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 
 /**
- * A random and sequential accessible sequence of zero or more bytes (octets).
+ * A random and sequential accessible sequence of zero or more bytes (octets).  // todo ByteBuf其实看过一点了,主要就是利用读写指针操作数组
  * This interface provides an abstract view for one or more primitive byte
  * arrays ({@code byte[]}) and {@linkplain ByteBuffer NIO buffers}.
  *
@@ -246,8 +246,8 @@ import java.nio.charset.UnsupportedCharsetException;
  * {@link ByteBufOutputStream}.
  */
 @SuppressWarnings("ClassMayBeInterface")
-public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
-
+public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {    // todo, 像这种比较核心的对象,怎么进行设计的?
+    // todo 怎么设计会比较合理? 什么样的场景下也可以这么设计?
     /**
      * Returns the number of bytes (octets) this buffer can contain.
      */

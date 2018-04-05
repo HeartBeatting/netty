@@ -227,7 +227,7 @@ public interface ChannelPipeline
      * @throws NullPointerException
      *         if the specified handler is {@code null}
      */
-    ChannelPipeline addFirst(String name, ChannelHandler handler);
+    ChannelPipeline addFirst(String name, ChannelHandler handler);  // 整个的责任链是在初始化的时候,按顺序set进入的.
 
     /**
      * Inserts a {@link ChannelHandler} at the first position of this pipeline.

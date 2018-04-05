@@ -33,22 +33,22 @@ import java.net.SocketAddress;
  * <p>
  * A channel provides a user:
  * <ul>
- * <li>the current state of the channel (e.g. is it open? is it connected?),</li>
+ * <li>the current state of the channel (e.g. is it open? is it connected?),</li>   // open, connected 两个状态是干嘛的.
  * <li>the {@linkplain ChannelConfig configuration parameters} of the channel (e.g. receive buffer size),</li>
- * <li>the I/O operations that the channel supports (e.g. read, write, connect, and bind), and</li>
- * <li>the {@link ChannelPipeline} which handles all I/O events and requests
+ * <li>the I/O operations that the channel supports (e.g. read, write, connect, and bind), and</li>     // some I/O operations.
+ * <li>the {@link ChannelPipeline} which handles all I/O events and requests        // ChannelPipeline 处理所有的I/O事件和请求
  *     associated with the channel.</li>
  * </ul>
  *
- * <h3>All I/O operations are asynchronous.</h3>
+ * <h3>All I/O operations are asynchronous.</h3>    // 所有IO操作都是异步!
  * <p>
  * All I/O operations in Netty are asynchronous.  It means any I/O calls will
  * return immediately with no guarantee that the requested I/O operation has
  * been completed at the end of the call.  Instead, you will be returned with
- * a {@link ChannelFuture} instance which will notify you when the requested I/O
+ * a {@link ChannelFuture} instance which will notify you when the requested I/O    // 异步操作都是返回一个ChannelFuture
  * operation has succeeded, failed, or canceled.
  *
- * <h3>Channels are hierarchical</h3>
+ * <h3>Channels are hierarchical</h3>   // channel是分不同层次的,有父子channel的关系
  * <p>
  * A {@link Channel} can have a {@linkplain #parent() parent} depending on
  * how it was created.  For instance, a {@link SocketChannel}, that was accepted
@@ -58,7 +58,7 @@ import java.net.SocketAddress;
  * The semantics of the hierarchical structure depends on the transport
  * implementation where the {@link Channel} belongs to.  For example, you could
  * write a new {@link Channel} implementation that creates the sub-channels that
- * share one socket connection, as <a href="http://beepcore.org/">BEEP</a> and
+ * share one socket connection, as <a href="http://beepcore.org/">BEEP</a> and      // 这里也涉及到了SSH协议?
  * <a href="http://en.wikipedia.org/wiki/Secure_Shell">SSH</a> do.
  *
  * <h3>Downcast to access transport-specific operations</h3>
@@ -82,7 +82,7 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     ChannelId id();
 
     /**
-     * Return the {@link EventLoop} this {@link Channel} was registered to.
+     * Return the {@link EventLoop} this {@link Channel} was registered to.     // channel会注册到一个唯一的EventLoop上,由Selector进行检查.
      */
     EventLoop eventLoop();
 
@@ -90,39 +90,39 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      * Returns the parent of this channel.
      *
      * @return the parent channel.
-     *         {@code null} if this channel does not have a parent channel.
+     *         {@code null} if this channel does not have a parent channel.     // 什么场景下,需要设计这种父子级的关系? 记得Spring里面也有这种关系的.
      */
     Channel parent();
 
     /**
-     * Returns the configuration of this channel.
+     * Returns the configuration of this channel.                               // 将所有的配置抽象为一个ChannelConfig对象,和对应的channel绑定,这种设计可以借鉴的.
      */
     ChannelConfig config();
 
     /**
-     * Returns {@code true} if the {@link Channel} is open and may get active later
+     * Returns {@code true} if the {@link Channel} is open and may get active later     // isOpen表示可能下面会激活,表示不是立马激活
      */
     boolean isOpen();
 
     /**
-     * Returns {@code true} if the {@link Channel} is registered with an {@link EventLoop}.
+     * Returns {@code true} if the {@link Channel} is registered with an {@link EventLoop}.     // 标记是否被注册到一个EventLoop了.
      */
     boolean isRegistered();
 
     /**
-     * Return {@code true} if the {@link Channel} is active and so connected.
+     * Return {@code true} if the {@link Channel} is active and so connected.           // 这个才表示channel是否真正激活了
      */
     boolean isActive();
 
     /**
-     * Return the {@link ChannelMetadata} of the {@link Channel} which describe the nature of the {@link Channel}.
+     * Return the {@link ChannelMetadata} of the {@link Channel} which describe the nature of the {@link Channel}.  // 描述channel的性质(元属性是什么),就是表示一些固有的属性?
      */
     ChannelMetadata metadata();
 
     /**
      * Returns the local address where this channel is bound to.  The returned
      * {@link SocketAddress} is supposed to be down-cast into more concrete
-     * type such as {@link InetSocketAddress} to retrieve the detailed
+     * type such as {@link InetSocketAddress} to retrieve the detailed          // 获取具体详情应该转化为更具体的类型InetSocketAddress
      * information.
      *
      * @return the local address of this channel.
@@ -148,7 +148,7 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
 
     /**
      * Returns the {@link ChannelFuture} which will be notified when this
-     * channel is closed.  This method always returns the same future instance.
+     * channel is closed.  This method always returns the same future instance. // 这个是用于响应channel的close事件的
      */
     ChannelFuture closeFuture();
 
@@ -158,45 +158,45 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      * this method returns {@code false} are queued until the I/O thread is
      * ready to process the queued write requests.
      */
-    boolean isWritable();
+    boolean isWritable();   // todo 这个是干嘛的
 
     /**
      * Get how many bytes can be written until {@link #isWritable()} returns {@code false}.
      * This quantity will always be non-negative. If {@link #isWritable()} is {@code false} then 0.
      */
-    long bytesBeforeUnwritable();
+    long bytesBeforeUnwritable();   // 能写的字节数
 
     /**
      * Get how many bytes must be drained from underlying buffers until {@link #isWritable()} returns {@code true}.
      * This quantity will always be non-negative. If {@link #isWritable()} is {@code true} then 0.
      */
-    long bytesBeforeWritable();
+    long bytesBeforeWritable();     // 需要清理的字节数
 
     /**
      * Returns an <em>internal-use-only</em> object that provides unsafe operations.
      */
-    Unsafe unsafe();
+    Unsafe unsafe();                // 用于暴露channel中定义的一个核心Unsafe对象.
 
     /**
-     * Return the assigned {@link ChannelPipeline}.
+     * Return the assigned {@link ChannelPipeline}.     // 返回分配的ChannelPipeline对象.
      */
     ChannelPipeline pipeline();
 
     /**
      * Return the assigned {@link ByteBufAllocator} which will be used to allocate {@link ByteBuf}s.
      */
-    ByteBufAllocator alloc();
+    ByteBufAllocator alloc();                           // 返回用于分配ByteBuf的ByteBufAllocator
 
     @Override
-    Channel read();
+    Channel read();                                     // 这里2个方法是重写了父接口的方法, Channel是ChannelOutboundInvoker的子接口
 
     @Override
     Channel flush();
 
     /**
-     * <em>Unsafe</em> operations that should <em>never</em> be called from user-code. These methods
-     * are only provided to implement the actual transport, and must be invoked from an I/O thread except for the
-     * following methods:
+     * <em>Unsafe</em> operations that should <em>never</em> be called from user-code. These methods                // 名字叫unsafe,就是不允许开发者直接使用的
+     * are only provided to implement the actual transport, and must be invoked from an I/O thread except for the   // 仅用于实现传输,除了下面方法外,必须被I/O线程调用.
+     * following methods:   // todo 为什么只能被I/O线程调用?
      * <ul>
      *   <li>{@link #localAddress()}</li>
      *   <li>{@link #remoteAddress()}</li>
@@ -210,7 +210,7 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
 
         /**
          * Return the assigned {@link RecvByteBufAllocator.Handle} which will be used to allocate {@link ByteBuf}'s when
-         * receiving data.
+         * receiving data.  // 接收数据时,使用Handle分配ByteBuf
          */
         RecvByteBufAllocator.Handle recvBufAllocHandle();
 
@@ -221,19 +221,19 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
         SocketAddress localAddress();
 
         /**
-         * Return the {@link SocketAddress} to which is bound remote or
+         * Return the {@link SocketAddress} to which is bound remote or     // 每个channel都有一个本地地址和一个远程地址. socket的协议决定了这样的结构.
          * {@code null} if none is bound yet.
          */
         SocketAddress remoteAddress();
 
         /**
-         * Register the {@link Channel} of the {@link ChannelPromise} and notify
+         * Register the {@link Channel} of the {@link ChannelPromise} and notify    // todo 怎么实现的
          * the {@link ChannelFuture} once the registration was complete.
          */
         void register(EventLoop eventLoop, ChannelPromise promise);
 
         /**
-         * Bind the {@link SocketAddress} to the {@link Channel} of the {@link ChannelPromise} and notify
+         * Bind the {@link SocketAddress} to the {@link Channel} of the {@link ChannelPromise} and notify   // todo 这个实现应该和上面差不多
          * it once its done.
          */
         void bind(SocketAddress localAddress, ChannelPromise promise);
@@ -243,7 +243,7 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
          * If a specific local {@link SocketAddress} should be used it need to be given as argument. Otherwise just
          * pass {@code null} to it.
          *
-         * The {@link ChannelPromise} will get notified once the connect operation was complete.
+         * The {@link ChannelPromise} will get notified once the connect operation was complete.    // Unsafe里的方法都有各种回调,保证能完成一些收尾工作.
          */
         void connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise);
 
@@ -257,7 +257,7 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
          * Close the {@link Channel} of the {@link ChannelPromise} and notify the {@link ChannelPromise} once the
          * operation was complete.
          */
-        void close(ChannelPromise promise);
+        void close(ChannelPromise promise);     // todo 这里有多种操作: 连接/断开连接/关闭/强制关闭/取消注册, 具体都做了什么呢?
 
         /**
          * Closes the {@link Channel} immediately without firing any events.  Probably only useful
