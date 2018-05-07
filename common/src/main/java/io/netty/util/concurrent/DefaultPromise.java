@@ -240,11 +240,11 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     @Override
     public Promise<V> awaitUninterruptibly() {
-        if (isDone()) {
+        if (isDone()) {     // 判断这个时间点有没有完成.
             return this;
         }
 
-        checkDeadLock();
+        checkDeadLock();    // 校验死锁: 死锁的条件是两个以上的线程,相互占用对象的资源,并且想要获取对方的资源.
 
         boolean interrupted = false;
         synchronized (this) {
@@ -385,7 +385,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         return executor;
     }
 
-    protected void checkDeadLock() {
+    protected void checkDeadLock() {    // 这里是校验等待结果的线程和执行任务的线程不能是同一个!
         EventExecutor e = executor();
         if (e != null && e.inEventLoop()) {
             throw new BlockingOperationException(toString());

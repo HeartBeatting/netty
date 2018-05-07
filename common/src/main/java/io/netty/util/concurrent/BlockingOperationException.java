@@ -19,7 +19,7 @@ package io.netty.util.concurrent;
  * An {@link IllegalStateException} which is raised when a user performed a blocking operation
  * when the user is in an event loop thread.  If a blocking operation is performed in an event loop
  * thread, the blocking operation will most likely enter a dead lock state, hence throwing this
- * exception.
+ * exception.   // 这个是netty被设计用来检测开发者,如果在event loop线程中调用了阻塞操作, 阻塞操作最可能导致死锁.
  */
 public class BlockingOperationException extends IllegalStateException {
 

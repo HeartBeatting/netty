@@ -23,7 +23,7 @@ import java.net.SocketAddress;
  *
  * It is a good starting point if your {@link ChannelHandler} implementation needs to intercept operations and also
  * state updates.
- */
+ */ // 这个类既继承了inboundHandler又实现了outboundHandler, 所以是一个双向的handler
 public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implements ChannelOutboundHandler {
 
     /**

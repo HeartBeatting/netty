@@ -228,7 +228,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     }
 
     private void addLast0(AbstractChannelHandlerContext newCtx) {
-        AbstractChannelHandlerContext prev = tail.prev;
+        AbstractChannelHandlerContext prev = tail.prev; // 这里维护的是一个双向链表
         newCtx.prev = prev;
         newCtx.next = tail;
         prev.next = newCtx;
