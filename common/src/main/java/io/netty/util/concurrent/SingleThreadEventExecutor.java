@@ -163,7 +163,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         this.addTaskWakesUp = addTaskWakesUp;
         this.maxPendingTasks = Math.max(16, maxPendingTasks);
         this.executor = ObjectUtil.checkNotNull(executor, "executor");
-        taskQueue = newTaskQueue(this.maxPendingTasks);     // 这里新建一个taskQueue,指定最大阻塞的任务数. 这里就是个有界的LinkedBlockingQueue.
+        taskQueue = newTaskQueue(this.maxPendingTasks);     // NioEventLoop 选用的是一个MPSC队列.
         rejectedExecutionHandler = ObjectUtil.checkNotNull(rejectedHandler, "rejectedHandler");
     }
 
@@ -467,7 +467,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         // NOOP
     }
 
-    protected void wakeup(boolean inEventLoop) {            // todo 为什么要强调不在EventLoop中呢
+    protected void wakeup(boolean inEventLoop) {
         if (!inEventLoop || state == ST_SHUTTING_DOWN) {    // 不在eventLoop或者线程池的状态是关闭中
             // Use offer as we actually only need this to unblock the thread and if offer fails we do not care as there
             // is already something in the queue.   // 我们只是希望使用offer方法,让线程非阻塞, 即使offer方法失败了, 我们也不在乎, WAKEUP_TASK就是空任务, 用来唤醒线程的.
@@ -744,7 +744,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         if (inEventLoop) {
             addTask(task);                      // 是,直接添加到当前线程池的任务队列中 (当前线程池是单一线程的线程池)
         } else {
-            startThread();                      //
+            startThread();                      // 启动线程
             addTask(task);
             if (isShutdown() && removeTask(task)) {
                 reject();
@@ -834,18 +834,18 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     // ScheduledExecutorService implementation
 
-    private static final long SCHEDULE_PURGE_INTERVAL = TimeUnit.SECONDS.toNanos(1);
+    private static final long SCHEDULE_PURGE_INTERVAL = TimeUnit.SECONDS.toNanos(1);    // 1秒, 转化为纳秒
 
     private void startThread() {
-        if (state == ST_NOT_STARTED) {
-            if (STATE_UPDATER.compareAndSet(this, ST_NOT_STARTED, ST_STARTED)) {
+        if (state == ST_NOT_STARTED) {              // 防止重复启动
+            if (STATE_UPDATER.compareAndSet(this, ST_NOT_STARTED, ST_STARTED)) {    // STATE_UPDATER是一系列递增的数字,相当于版本号,是可以使用CAS的保证线程安全和原子性的.
                 doStartThread();
             }
         }
     }
 
-    private void doStartThread() {
-        assert thread == null;                      // 这种其实是防护措施,保证代码逻辑的可靠性,可以学习下
+    private void doStartThread() {                  // 当前线程还没启动, thread必须为null的
+        assert thread == null;                      // 这种其实是防护措施代码,性能影响很小,保证代码逻辑的可靠性,平时也可以使用下.
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -857,7 +857,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
                 boolean success = false;
                 updateLastExecutionTime();
                 try {
-                    SingleThreadEventExecutor.this.run();   // 开始run
+                    SingleThreadEventExecutor.this.run();   // 开始NioEventLoop的死循环select, 也就是其实在register时,如果线程没有启动就会启动线程开始select
                     success = true;
                 } catch (Throwable t) {
                     logger.warn("Unexpected exception from an event executor: ", t);

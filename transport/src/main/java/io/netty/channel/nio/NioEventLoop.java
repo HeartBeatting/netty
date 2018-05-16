@@ -121,7 +121,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     private Selector unwrappedSelector;             // 未包装的多路复用器
     private SelectedSelectionKeySet selectedKeys;   // 这个是注册到当前EventLoop的key,循环检查就是这个集合
 
-    private final SelectorProvider provider;        // 这个是jdk的SelectorProvider, 用于生成SelectorProvider.
+    private final SelectorProvider provider;        // 这个是jdk的SelectorProvider, 用于生成SelectorProvider, SelectorProvider用来open channel
 
     /**
      * Boolean that controls determines if a blocked Selector.select should
@@ -224,8 +224,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                         return cause;
                     }
 
-                    selectedKeysField.set(unwrappedSelector, selectedKeySet);
-                    publicSelectedKeysField.set(unwrappedSelector, selectedKeySet);
+                    selectedKeysField.set(unwrappedSelector, selectedKeySet);   // 通过反射, 将netty中的selectedKeys赋值到JDK的selectorImplClass实例中去.
+                    publicSelectedKeysField.set(unwrappedSelector, selectedKeySet); // 最终依赖的还是jdk的多路复用器.(Selector)
                     return null;
                 } catch (NoSuchFieldException e) {
                     return e;
@@ -257,7 +257,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     @Override
     protected Queue<Runnable> newTaskQueue(int maxPendingTasks) {
         // This event loop never calls takeTask()
-        return PlatformDependent.newMpscQueue(maxPendingTasks);
+        return PlatformDependent.newMpscQueue(maxPendingTasks); // NioEventLoop选用的是这个多生产者单消费者无锁队列.
     }
 
     @Override
@@ -715,7 +715,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     int selectNow() throws IOException {
         try {
-            return selector.selectNow();
+            return selector.selectNow();    // netty的NioEventLoop select操作最终还是依赖jdk的selector
         } finally {
             // restore wakeup state if needed
             if (wakenUp.get()) {
@@ -732,8 +732,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             long selectDeadLineNanos = currentTimeNanos + delayNanos(currentTimeNanos);
             for (;;) {
                 long timeoutMillis = (selectDeadLineNanos - currentTimeNanos + 500000L) / 1000000L;
-                if (timeoutMillis <= 0) {
-                    if (selectCnt == 0) {
+                if (timeoutMillis <= 0) {   // <=0代表到时间了
+                    if (selectCnt == 0) {   // 还没select
                         selector.selectNow();
                         selectCnt = 1;
                     }
@@ -750,7 +750,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                     break;
                 }
 
-                int selectedKeys = selector.select(timeoutMillis);
+                int selectedKeys = selector.select(timeoutMillis);  // 获取到的select key (不同的位表示不同的操作)
                 selectCnt ++;
 
                 if (selectedKeys != 0 || oldWakenUp || wakenUp.get() || hasTasks() || hasScheduledTasks()) {

@@ -39,8 +39,8 @@ public interface EventLoopGroup extends EventExecutorGroup {    //继承了Event
      * Register a {@link Channel} with this {@link EventLoop} using a {@link ChannelFuture}. The passed
      * {@link ChannelFuture} will get notified once the registration was complete and also will get returned.
      */
-    ChannelFuture register(ChannelPromise promise);
-
+    ChannelFuture register(ChannelPromise promise);     // 所有的register操作都是异步的(事件响应),根据返回的channelFuture可以监听事件完成.
+    // netty就是全异步的,事件响应框架,效率很高.
     /**
      * Register a {@link Channel} with this {@link EventLoop}. The passed {@link ChannelFuture}
      * will get notified once the registration was complete and also will get returned.

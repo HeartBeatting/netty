@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Abstract base class for {@link EventExecutorGroup} implementations that handles their tasks with multiple threads at
- * the same time.
+ * the same time.   // netty里的xxxGroup都是线程组, 用于需要多线程处理的场景.
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
 
@@ -76,12 +76,12 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());    // executor为null,就新建一个ThreadPerTaskExecutor,使用默认的DefaultThreadFactory
         }
 
-        children = new EventExecutor[nThreads];                                 // 初始化数组大小, 默认就是8个长度的数组了
+        children = new EventExecutor[nThreads];                                 // 初始化数组大小, 默认就是8个长度的数组了, 这里的线程数组就是用来处理任务的多线程.
 
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
-                children[i] = newChild(executor, args);                         // 创建child
+                children[i] = newChild(executor, args);                         // 创建child  // todo 这里会启动线程么
                 success = true;
             } catch (Exception e) {
                 // TODO: Think about if this is a good exception type
@@ -92,7 +92,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
                         children[j].shutdownGracefully();   // 创建失败,这里需要把所有的children都优雅关闭的
                     }
 
-                    for (int j = 0; j < i; j ++) {
+                    for (int j = 0; j < i; j ++) {          // 只要有一个失败, 前面创建的loop线程也要优雅关闭
                         EventExecutor e = children[j];
                         try {
                             while (!e.isTerminated()) {     // 一直等待线程池关闭,超时时间是Integer.MAX_VALUE,就相当于一直等待了.
@@ -107,7 +107,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
                 }
             }
         }
-
+        // 有些东西太细的, 看完就忘掉了, 还是需要对核心的组件和线程模型做提炼和总结.
         chooser = chooserFactory.newChooser(children);      // 根据children数组,用工厂创建一个chooser选择器,用来进行轮询的
 
         final FutureListener<Object> terminationListener = new FutureListener<Object>() {

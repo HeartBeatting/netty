@@ -467,7 +467,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
 
             AbstractChannel.this.eventLoop = eventLoop;
-
+            // Channel在注册到EventLoop的操作也是一个异步非阻塞的操作, 所有的操作(读,写,连接,注册)都是异步非阻塞的,效率很高
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
@@ -475,7 +475,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     eventLoop.execute(new Runnable() {
                         @Override
                         public void run() {
-                            register0(promise);
+                            register0(promise); // 这里提交了一个任务,任务完成了可以通过promise得知结果,这样就实现了非阻塞的.
                         }
                     });
                 } catch (Throwable t) {
