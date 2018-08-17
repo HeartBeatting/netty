@@ -834,7 +834,7 @@ public final class PlatformDependent {
                         Math.max(Math.min(maxCapacity, MAX_ALLOWED_MPSC_CAPACITY), MIN_MAX_MPSC_CAPACITY);
                 return new MpscChunkedArrayQueue<T>(MPSC_CHUNK_SIZE, capacity);
             } else {
-                return new MpscLinkedAtomicQueue<T>();
+                return new MpscLinkedAtomicQueue<T>();  // 多生产者,单消费者队列 (无锁队列,吞吐量更高!)
             }
         }
     }

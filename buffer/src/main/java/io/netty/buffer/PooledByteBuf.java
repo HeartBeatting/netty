@@ -21,7 +21,7 @@ import io.netty.util.Recycler.Handle;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
+// todo
 abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
 
     private final Recycler.Handle<PooledByteBuf<T>> recyclerHandle;
@@ -49,7 +49,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
     void initUnpooled(PoolChunk<T> chunk, int length) {
         init0(chunk, 0, chunk.offset, length, length, null);
     }
-
+    // init0初始化方法会为PooledByteBuf分配内存地址.
     private void init0(PoolChunk<T> chunk, long handle, int offset, int length, int maxLength, PoolThreadCache cache) {
         assert handle >= 0;
         assert chunk != null;
@@ -70,9 +70,9 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
      */
     final void reuse(int maxCapacity) {
         maxCapacity(maxCapacity);
-        setRefCnt(1);
-        setIndex0(0, 0);
-        discardMarks();
+        setRefCnt(1);   // 重复使用时需要设置引用计数为1
+        setIndex0(0, 0);// 读写指针指向0
+        discardMarks(); // 重置mark
     }
 
     @Override
@@ -161,15 +161,15 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
     protected abstract ByteBuffer newInternalNioBuffer(T memory);
 
     @Override
-    protected final void deallocate() {
+    protected final void deallocate() {     // 池化的ByteBuf,内存是自己管理的,要自己释放.
         if (handle >= 0) {
             final long handle = this.handle;
             this.handle = -1;
             memory = null;
             tmpNioBuf = null;
-            chunk.arena.free(chunk, handle, maxLength, cache);
-            chunk = null;
-            recycle();
+            chunk.arena.free(chunk, handle, maxLength, cache);  // 释放poolTrunk的内存空间(就是将内存标记为未被使用)
+            chunk = null;                   // 释放对chunk的引用
+            recycle();                      // 这里是回收PooledByteBuf到对象池中.
         }
     }
 

@@ -27,7 +27,7 @@ import java.util.List;
  * number of readable bytes if the read operation was not able to fill a certain
  * amount of the allocated buffer two times consecutively.  Otherwise, it keeps
  * returning the same prediction.
- */
+ */ // todo 有空可以测试下,这种自适应的缓存大小能提升多高的性能.
 public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufAllocator {
 
     static final int DEFAULT_MINIMUM = 64;
@@ -45,7 +45,7 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
             sizeTable.add(i);
         }
 
-        for (int i = 512; i > 0; i <<= 1) {
+        for (int i = 512; i > 0; i <<= 1) {     // 加倍
             sizeTable.add(i);
         }
 
@@ -61,7 +61,7 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
     @Deprecated
     public static final AdaptiveRecvByteBufAllocator DEFAULT = new AdaptiveRecvByteBufAllocator();
 
-    private static int getSizeTableIndex(final int size) {
+    private static int getSizeTableIndex(final int size) {  // 根据size,使用二分法查找最接近的index并返回.
         for (int low = 0, high = SIZE_TABLE.length - 1;;) {
             if (high < low) {
                 return low;
@@ -105,17 +105,17 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
             return nextReceiveBufferSize;
         }
 
-        private void record(int actualReadBytes) {
-            if (actualReadBytes <= SIZE_TABLE[Math.max(0, index - INDEX_DECREMENT - 1)]) {
+        private void record(int actualReadBytes) {  // actualReadBytes是最终读取到的大小.
+            if (actualReadBytes <= SIZE_TABLE[Math.max(0, index - INDEX_DECREMENT - 1)]) {  // 比较的是当前index往前推2位的size值.
                 if (decreaseNow) {
                     index = Math.max(index - INDEX_DECREMENT, minIndex);
                     nextReceiveBufferSize = SIZE_TABLE[index];
                     decreaseNow = false;
-                } else {
+                } else {                // 第一次decreaseNow为false, 进来修改为true, 所以如果连续两次不足就调整缓存大小.
                     decreaseNow = true;
                 }
-            } else if (actualReadBytes >= nextReceiveBufferSize) {
-                index = Math.min(index + INDEX_INCREMENT, maxIndex);
+            } else if (actualReadBytes >= nextReceiveBufferSize) {  // 实际读取字节大于nextReceiveBufferSize
+                index = Math.min(index + INDEX_INCREMENT, maxIndex);    // 一次往后调节四位.
                 nextReceiveBufferSize = SIZE_TABLE[index];
                 decreaseNow = false;
             }

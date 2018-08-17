@@ -853,7 +853,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
 
             try {
-                doWrite(outboundBuffer);
+                doWrite(outboundBuffer);    // doWrite将数据写入到socketChannel (返回给客户端)
             } catch (Throwable t) {
                 if (t instanceof IOException && config().isAutoClose()) {
                     /**
@@ -1052,7 +1052,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         public boolean tryFailure(Throwable cause) {
             throw new IllegalStateException();
         }
-
+        // only allow seClosed method
         boolean setClosed() {
             return super.trySuccess();
         }

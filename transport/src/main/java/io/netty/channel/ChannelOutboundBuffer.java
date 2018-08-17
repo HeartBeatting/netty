@@ -170,7 +170,7 @@ public final class ChannelOutboundBuffer {
         }
 
         long newWriteBufferSize = TOTAL_PENDING_SIZE_UPDATER.addAndGet(this, size);
-        if (newWriteBufferSize > channel.config().getWriteBufferHighWaterMark()) {
+        if (newWriteBufferSize > channel.config().getWriteBufferHighWaterMark()) {  // 判断newWriteBufferSize是否大于65536.
             setUnwritable(invokeLater);
         }
     }
@@ -575,7 +575,7 @@ public final class ChannelOutboundBuffer {
                 fireChannelWritabilityChangedTask = task = new Runnable() {
                     @Override
                     public void run() {
-                        pipeline.fireChannelWritabilityChanged();
+                        pipeline.fireChannelWritabilityChanged();   // 可写性变更. 表示字节数据都已经保存在channelBuffer中了.
                     }
                 };
             }
@@ -776,7 +776,7 @@ public final class ChannelOutboundBuffer {
         }
 
         static Entry newInstance(Object msg, int size, long total, ChannelPromise promise) {
-            Entry entry = RECYCLER.get();
+            Entry entry = RECYCLER.get();   // 这里用到了Entry的对象池,向对象池申请entry.
             entry.msg = msg;
             entry.pendingSize = size + CHANNEL_OUTBOUND_BUFFER_ENTRY_OVERHEAD;
             entry.total = total;

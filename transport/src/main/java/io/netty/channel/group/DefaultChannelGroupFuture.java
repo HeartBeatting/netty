@@ -36,7 +36,7 @@ import java.util.Map;
 
 /**
  * The default {@link ChannelGroupFuture} implementation.
- */
+ */ // DefaultPromise is all kinds of futures's base class
 final class DefaultChannelGroupFuture extends DefaultPromise<Void> implements ChannelGroupFuture {
 
     private final ChannelGroup group;

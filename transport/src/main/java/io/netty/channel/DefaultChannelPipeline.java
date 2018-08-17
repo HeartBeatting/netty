@@ -40,11 +40,11 @@ import java.util.concurrent.RejectedExecutionException;
 /**
  * The default {@link ChannelPipeline} implementation.  It is usually created
  * by a {@link Channel} implementation when the {@link Channel} is created.
- */
+ */ // 此类中大部分方法都是对DefaultChannelPipeline进行构造, 增删改查操作.
 public class DefaultChannelPipeline implements ChannelPipeline {
 
     static final InternalLogger logger = InternalLoggerFactory.getInstance(DefaultChannelPipeline.class);
-
+    // 双向链表,所以持有了头和尾节点的引用.
     private static final String HEAD_NAME = generateName0(HeadContext.class);
     private static final String TAIL_NAME = generateName0(TailContext.class);
 
@@ -121,7 +121,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
         Map<EventExecutorGroup, EventExecutor> childExecutors = this.childExecutors;
         if (childExecutors == null) {
-            // Use size of 4 as most people only use one extra EventExecutor.
+            // Use size of 4 as most people only use one extra EventExecutor.   // 正常就2个,boss and worker.
             childExecutors = this.childExecutors = new IdentityHashMap<EventExecutorGroup, EventExecutor>(4);
         }
         // Pin one of the child executors once and remember it so that the same child executor
@@ -169,7 +169,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
-                        callHandlerAdded0(newCtx);
+                        callHandlerAdded0(newCtx);  // 就连往pileline中添加handler都是线程安全的.
                     }
                 });
                 return this;
@@ -816,7 +816,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     }
 
     @Override
-    public final ChannelPipeline fireChannelRegistered() {
+    public final ChannelPipeline fireChannelRegistered() {  // 发送event事件就是从第一个context开始传播
         AbstractChannelHandlerContext.invokeChannelRegistered(head);
         return this;
     }
@@ -1008,7 +1008,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
     @Override
     public final ChannelPipeline read() {
-        tail.read();
+        tail.read();    // read from tail ?
         return this;
     }
 
@@ -1169,7 +1169,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             ReferenceCountUtil.release(msg);
         }
     }
-
+    // TailContext在outbound请求中不会起作用, inbound请求会走到TailContext, 所以只实现了ChannelInboundHandler.
     // A special catch-all handler that handles both bytes and messages.
     final class TailContext extends AbstractChannelHandlerContext implements ChannelInboundHandler {
 
@@ -1224,7 +1224,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         @Override
         public void channelReadComplete(ChannelHandlerContext ctx) throws Exception { }
     }
-
+    // InboundHandler as well as OutboundHandler.
     final class HeadContext extends AbstractChannelHandlerContext
             implements ChannelOutboundHandler, ChannelInboundHandler {
 

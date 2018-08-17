@@ -27,7 +27,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
-/**
+/** // todo 看下这几个例子是怎么用的.
  * Keeps sending random data to the specified address.
  */
 public final class DiscardClient {

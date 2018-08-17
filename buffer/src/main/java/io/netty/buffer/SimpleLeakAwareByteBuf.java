@@ -99,7 +99,7 @@ class SimpleLeakAwareByteBuf extends WrappedByteBuf {
 
     @Override
     public final boolean release() {
-        if (super.release()) {
+        if (super.release()) {  // 调用release之后都会调用leak的close方法
             closeLeak();
             return true;
         }

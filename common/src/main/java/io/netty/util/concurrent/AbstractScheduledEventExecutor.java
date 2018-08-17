@@ -43,8 +43,8 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
 
     Queue<ScheduledFutureTask<?>> scheduledTaskQueue() {
         if (scheduledTaskQueue == null) {
-            scheduledTaskQueue = new PriorityQueue<ScheduledFutureTask<?>>();
-        }
+            scheduledTaskQueue = new PriorityQueue<ScheduledFutureTask<?>>();   // 这是一个优先级队列. netty自己维护了一个优先级队列
+        }                                                                       // 不是直接利用延时任务线程池的队列.
         return scheduledTaskQueue;
     }
 
@@ -86,7 +86,7 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
      * You should use {@link #nanoTime()} to retrieve the the correct {@code nanoTime}.
      */
     protected final Runnable pollScheduledTask(long nanoTime) {
-        assert inEventLoop();   // 这里很多方法都会校验inEventLoop()
+        assert inEventLoop();
 
         Queue<ScheduledFutureTask<?>> scheduledTaskQueue = this.scheduledTaskQueue;
         ScheduledFutureTask<?> scheduledTask = scheduledTaskQueue == null ? null : scheduledTaskQueue.peek();

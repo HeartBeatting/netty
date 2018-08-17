@@ -88,9 +88,9 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                 }
 
                 int size = readBuf.size();
-                for (int i = 0; i < size; i ++) {
+                for (int i = 0; i < size; i ++) {   // 遍历redBuf中的NioSocketChannel，触发各自pipeline的ChannelRead事件
                     readPending = false;
-                    pipeline.fireChannelRead(readBuf.get(i));
+                    pipeline.fireChannelRead(readBuf.get(i));   // 让责任链继续进行下去.
                 }
                 readBuf.clear();
                 allocHandle.readComplete();
@@ -99,7 +99,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                 if (exception != null) {
                     closed = closeOnReadError(exception);
 
-                    pipeline.fireExceptionCaught(exception);
+                    pipeline.fireExceptionCaught(exception);    // 在责任链传递异常.
                 }
 
                 if (closed) {

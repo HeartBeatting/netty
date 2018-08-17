@@ -149,7 +149,7 @@ public final class ThreadDeathWatcher {
                 notifyWatchees();
 
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(1000); // 防止一直死循环,这里等待1秒钟.
                 } catch (InterruptedException ignore) {
                     // Ignore the interrupt; do not terminate until all tasks are run.
                 }
@@ -193,9 +193,9 @@ public final class ThreadDeathWatcher {
                 }
 
                 if (e.isWatch) {
-                    watchees.add(e);
+                    watchees.add(e);    // 单线程运行,所以这些操作都是线程安全的.
                 } else {
-                    watchees.remove(e);
+                    watchees.remove(e); // 操作unwatch时会走到这里,取消list里面需要watch的.
                 }
             }
         }
@@ -204,7 +204,7 @@ public final class ThreadDeathWatcher {
             List<Entry> watchees = this.watchees;
             for (int i = 0; i < watchees.size();) {
                 Entry e = watchees.get(i);
-                if (!e.thread.isAlive()) {
+                if (!e.thread.isAlive()) {  // 判断线程是否存活,不存活就执行任务.
                     watchees.remove(i);
                     try {
                         e.task.run();

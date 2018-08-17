@@ -26,7 +26,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
-
+// PooledDirectByteBuf是一个jvm堆中的对象, 可以被RECYCLER回收, 但是它持有了一些属性(chunk,以及直接内存的地址,可以对直接内存进行读写)
 final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
 
     private static final Recycler<PooledDirectByteBuf> RECYCLER = new Recycler<PooledDirectByteBuf>() {
@@ -35,7 +35,7 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
             return new PooledDirectByteBuf(handle, 0);
         }
     };
-
+    // PoolArena.DirectArena调用此方法, 从对象池中获取一个对象 (如果没有就创建一个).
     static PooledDirectByteBuf newInstance(int maxCapacity) {
         PooledDirectByteBuf buf = RECYCLER.get();
         buf.reuse(maxCapacity);
@@ -57,7 +57,7 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
     }
 
     @Override
-    protected byte _getByte(int index) {
+    protected byte _getByte(int index) {    // 实现了抽象类的_getByte等方法,就是通过操作直接内存实现的.
         return memory.get(idx(index));
     }
 
@@ -402,7 +402,7 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
     public ByteBuf copy(int index, int length) {
         checkIndex(index, length);
         ByteBuf copy = alloc().directBuffer(length, maxCapacity());
-        copy.writeBytes(this, index, length);
+        copy.writeBytes(this, index, length);   // 拷贝操作,就是new一个ByteBuf,然后把原来里面的字节读取到新的ByteBuf里.
         return copy;
     }
 
@@ -412,7 +412,7 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
     }
 
     @Override
-    public ByteBuffer nioBuffer(int index, int length) {
+    public ByteBuffer nioBuffer(int index, int length) {    // 这个方法可以转化为原生的ByteBuffer
         checkIndex(index, length);
         index = idx(index);
         return ((ByteBuffer) memory.duplicate().position(index).limit(index + length)).slice();

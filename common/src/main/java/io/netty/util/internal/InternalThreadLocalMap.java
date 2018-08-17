@@ -117,7 +117,7 @@ public final class InternalThreadLocalMap extends UnpaddedInternalThreadLocalMap
     public int size() {
         int count = 0;
 
-        if (futureListenerStackDepth != 0) {
+        if (futureListenerStackDepth != 0) {    // 用于判断是否需要
             count ++;
         }
         if (localChannelReaderStackDepth != 0) {

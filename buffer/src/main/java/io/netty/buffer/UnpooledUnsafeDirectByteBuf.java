@@ -430,8 +430,8 @@ public class UnpooledUnsafeDirectByteBuf extends AbstractReferenceCountedByteBuf
         ByteBuffer tmpBuf = internalNioBuffer();
         tmpBuf.clear().position(index).limit(index + length);
         try {
-            return in.read(tmpBuf);
-        } catch (ClosedChannelException ignored) {
+            return in.read(tmpBuf); // 将channel中流读取到tmpBuf中.
+        } catch (ClosedChannelException ignored) {  // ClosedChannelException表示channel已经关闭
             return -1;
         }
     }
@@ -472,7 +472,7 @@ public class UnpooledUnsafeDirectByteBuf extends AbstractReferenceCountedByteBuf
     private ByteBuffer internalNioBuffer() {
         ByteBuffer tmpNioBuf = this.tmpNioBuf;
         if (tmpNioBuf == null) {
-            this.tmpNioBuf = tmpNioBuf = buffer.duplicate();
+            this.tmpNioBuf = tmpNioBuf = buffer.duplicate();    // 这里将buf缓存到tmpNioBuf.
         }
         return tmpNioBuf;
     }

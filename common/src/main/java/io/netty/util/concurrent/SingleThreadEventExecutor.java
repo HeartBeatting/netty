@@ -394,7 +394,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         fetchFromScheduledTaskQueue();
         Runnable task = pollTask();
         if (task == null) {
-            afterRunningAllTasks();
+            afterRunningAllTasks();     // 这种写法也蛮好的, 一个新的类, 继承了此类, 然后留有一个可重写的方法, 给子类自定义使用.
             return false;
         }
 
@@ -408,9 +408,9 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
             // Check timeout every 64 tasks because nanoTime() is relatively expensive.
             // XXX: Hard-coded value - will make it configurable if it is really a problem.
-            if ((runTasks & 0x3F) == 0) {
+            if ((runTasks & 0x3F) == 0) {   // 这里连nanoTime()方法消耗高都考虑到了. 0x3F(0x表示16进制) = 64.
                 lastExecutionTime = ScheduledFutureTask.nanoTime();
-                if (lastExecutionTime >= deadline) {
+                if (lastExecutionTime >= deadline) {    // 每执行64个任务才检查一次,有没有超时.
                     break;
                 }
             }
@@ -422,7 +422,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
             }
         }
 
-        afterRunningAllTasks();
+        afterRunningAllTasks(); // 这个也是预留给子类自定义使用的.
         this.lastExecutionTime = lastExecutionTime;
         return true;
     }
@@ -436,9 +436,9 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      * Returns the amount of time left until the scheduled task with the closest dead line is executed.
      */
     protected long delayNanos(long currentTimeNanos) {
-        ScheduledFutureTask<?> scheduledTask = peekScheduledTask();
-        if (scheduledTask == null) {
-            return SCHEDULE_PURGE_INTERVAL;
+        ScheduledFutureTask<?> scheduledTask = peekScheduledTask();     // 这里的peek只是看下, 不会删除元素.
+        if (scheduledTask == null) {            // peekScheduledTask 返回的是优先级队列第一个任务.
+            return SCHEDULE_PURGE_INTERVAL;     // when queue is empty then return 1s (1000000)
         }
 
         return scheduledTask.delayNanos(currentTimeNanos);

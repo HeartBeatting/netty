@@ -103,7 +103,7 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
 
             if (refCntUpdater.compareAndSet(this, refCnt, refCnt - decrement)) {
                 if (refCnt == decrement) {
-                    deallocate();
+                    deallocate();   // 还是和引用计数器有关系,当检测到没有被使用,则进行回收.
                     return true;
                 }
                 return false;

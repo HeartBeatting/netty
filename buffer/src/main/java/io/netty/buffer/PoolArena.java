@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Math.max;
-
-abstract class PoolArena<T> implements PoolArenaMetric {
+// netty的内存管理,内部是先申请一个整块的内存,然后将内存划分为更小的页和子页,分配内存的时候对二叉查找树进行遍历,找到一个连续的空间可以分配
+abstract class PoolArena<T> implements PoolArenaMetric {// 当然为了提高分配效率和提高内存使用效率,减少碎片还做了很多其他的优化.
     static final boolean HAS_UNSAFE = PlatformDependent.hasUnsafe();
 
     enum SizeClass {
@@ -142,8 +142,8 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     abstract boolean isDirect();
 
     PooledByteBuf<T> allocate(PoolThreadCache cache, int reqCapacity, int maxCapacity) {
-        PooledByteBuf<T> buf = newByteBuf(maxCapacity);
-        allocate(cache, buf, reqCapacity);
+        PooledByteBuf<T> buf = newByteBuf(maxCapacity);     // 创建一个对象或者从对象池中获取一个对象. 这里创建的对象还没在直接内存分配空间.
+        allocate(cache, buf, reqCapacity);                  // 为对象分配内存空间.
         return buf;
     }
 
@@ -761,7 +761,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
 
         private static ByteBuffer allocateDirect(int capacity) {
             return PlatformDependent.useDirectBufferNoCleaner() ?
-                    PlatformDependent.allocateDirectNoCleaner(capacity) : ByteBuffer.allocateDirect(capacity);
+                    PlatformDependent.allocateDirectNoCleaner(capacity) : ByteBuffer.allocateDirect(capacity);  // 调用jdk分配直接内存.
         }
 
         @Override

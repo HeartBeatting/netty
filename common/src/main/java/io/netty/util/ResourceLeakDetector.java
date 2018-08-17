@@ -30,8 +30,8 @@ import java.util.concurrent.ConcurrentMap;
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
 import static io.netty.util.internal.StringUtil.NEWLINE;
 import static io.netty.util.internal.StringUtil.simpleClassName;
-
-public class ResourceLeakDetector<T> {
+// 这个类其实就是抽概率检测下,开发者有没有在ByteBuf被GC前手工调用release. 如果对象池中ByteBuf的被gc了,但是没有手工回收内存就会内存泄漏.
+public class ResourceLeakDetector<T> {  // 因为netty针对池化的直接内存对象,是自己管理内存地址的.
 
     private static final String PROP_LEVEL_OLD = "io.netty.leakDetectionLevel";
     private static final String PROP_LEVEL = "io.netty.leakDetection.level";
@@ -244,9 +244,9 @@ public class ResourceLeakDetector<T> {
         }
 
         if (level.ordinal() < Level.PARANOID.ordinal()) {
-            if ((PlatformDependent.threadLocalRandom().nextInt(samplingInterval)) == 0) {
+            if ((PlatformDependent.threadLocalRandom().nextInt(samplingInterval)) == 0) {   // 运用threadLocalRandom, 按概率抽查
                 reportLeak(level);
-                return new DefaultResourceLeak(obj);
+                return new DefaultResourceLeak(obj);    // 想要监控就要new一个DefaultResourceLeak对象.
             } else {
                 return null;
             }
@@ -272,7 +272,7 @@ public class ResourceLeakDetector<T> {
         // Detect and report previous leaks.
         for (;;) {
             @SuppressWarnings("unchecked")
-            DefaultResourceLeak ref = (DefaultResourceLeak) refQueue.poll();
+            DefaultResourceLeak ref = (DefaultResourceLeak) refQueue.poll();    // queue里面的是被gc的
             if (ref == null) {
                 break;
             }
@@ -335,7 +335,7 @@ public class ResourceLeakDetector<T> {
         private int removedRecords;
 
         DefaultResourceLeak(Object referent) {
-            super(referent, refQueue);
+            super(referent, refQueue);  // 继承了PhantomReference,gc时就会放到refQueue中.
 
             assert referent != null;
 

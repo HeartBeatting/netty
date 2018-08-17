@@ -35,17 +35,17 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(DefaultPromise.class);
     private static final InternalLogger rejectedExecutionLogger =
             InternalLoggerFactory.getInstance(DefaultPromise.class.getName() + ".rejectedExecution");
-    private static final int MAX_LISTENER_STACK_DEPTH = Math.min(8,
+    private static final int MAX_LISTENER_STACK_DEPTH = Math.min(8,     // use to avoid StackOverFlow exception
             SystemPropertyUtil.getInt("io.netty.defaultPromise.maxListenerStackDepth", 8));
     @SuppressWarnings("rawtypes")
     private static final AtomicReferenceFieldUpdater<DefaultPromise, Object> RESULT_UPDATER =
-            AtomicReferenceFieldUpdater.newUpdater(DefaultPromise.class, Object.class, "result");
+            AtomicReferenceFieldUpdater.newUpdater(DefaultPromise.class, Object.class, "result");   // result都是通过cas修改的
     private static final Signal SUCCESS = Signal.valueOf(DefaultPromise.class, "SUCCESS");
     private static final Signal UNCANCELLABLE = Signal.valueOf(DefaultPromise.class, "UNCANCELLABLE");
     private static final CauseHolder CANCELLATION_CAUSE_HOLDER = new CauseHolder(ThrowableUtil.unknownStackTrace(
             new CancellationException(), DefaultPromise.class, "cancel(...)"));
 
-    private volatile Object result;
+    private volatile Object result; // result都是通过cas修改的, volatile变量.
     private final EventExecutor executor;
     /**
      * One or more listeners. Can be a {@link GenericFutureListener} or a {@link DefaultFutureListeners}.
@@ -413,13 +413,13 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         EventExecutor executor = executor();
         if (executor.inEventLoop()) {           // 判断是否是EventLoop的线程
             final InternalThreadLocalMap threadLocals = InternalThreadLocalMap.get();
-            final int stackDepth = threadLocals.futureListenerStackDepth();
-            if (stackDepth < MAX_LISTENER_STACK_DEPTH) {
-                threadLocals.setFutureListenerStackDepth(stackDepth + 1);
+            final int stackDepth = threadLocals.futureListenerStackDepth(); // stackDepth default value is 0
+            if (stackDepth < MAX_LISTENER_STACK_DEPTH) {    // 如果是方法调用子方法,层级非常多,就可能造成栈溢出.
+                threadLocals.setFutureListenerStackDepth(stackDepth + 1);   // 加一
                 try {
                     notifyListenersNow();
                 } finally {
-                    threadLocals.setFutureListenerStackDepth(stackDepth);
+                    threadLocals.setFutureListenerStackDepth(stackDepth);   // 将值设置回stackDepth. 单线程所以不会有问题.
                 }
                 return;
             }
@@ -546,8 +546,8 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     }
 
     private synchronized void checkNotifyWaiters() {
-        if (waiters > 0) {
-            notifyAll();
+        if (waiters > 0) {  // 用一个统计的数字, 可以更快的判断是否有waiters, 这样效率更高!
+            notifyAll();    // waiters都是在加锁的情况下修改和读取的. 单线程模型可重入锁还是比较快的.
         }
     }
 
@@ -643,7 +643,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
         final ProgressiveFuture<V> self = (ProgressiveFuture<V>) this;
 
-        EventExecutor executor = executor();
+        EventExecutor executor = executor();    // 通知监听者也是通过executor实现的
         if (executor.inEventLoop()) {
             if (listeners instanceof GenericProgressiveFutureListener[]) {
                 notifyProgressiveListeners0(
@@ -743,7 +743,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     private static boolean isCancelled0(Object result) {
         return result instanceof CauseHolder && ((CauseHolder) result).cause instanceof CancellationException;
     }
-
+    // 这个方法不是线程安全的, 只是这个类的私有方法
     private static boolean isDone0(Object result) {
         return result != null && result != UNCANCELLABLE;
     }

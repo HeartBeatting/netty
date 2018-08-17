@@ -229,11 +229,11 @@ final class PoolChunk<T> implements PoolChunkMetric {
      */
     private void updateParentsAlloc(int id) {
         while (id > 1) {
-            int parentId = id >>> 1;
+            int parentId = id >>> 1;    // 除以2得到父节点
             byte val1 = value(id);
-            byte val2 = value(id ^ 1);
-            byte val = val1 < val2 ? val1 : val2;
-            setValue(parentId, val);
+            byte val2 = value(id ^ 1);  // id和1异或得到的是另一个二叉树的另一个兄弟节点
+            byte val = val1 < val2 ? val1 : val2;   // 比较两个兄弟节点
+            setValue(parentId, val);    // 将父节点的值设为较小的
             id = parentId;
         }
     }
@@ -290,7 +290,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
         assert value == d && (id & initial) == 1 << d : String.format("val = %d, id & initial = %d, d = %d",
                 value, id & initial, d);
         setValue(id, unusable); // mark as unusable
-        updateParentsAlloc(id);
+        updateParentsAlloc(id); // 递归标记节点和所有的父节点,避免重复被使用.
         return id;
     }
 
@@ -407,7 +407,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
                 reqCapacity, subpage.elemSize, arena.parent.threadCache());
     }
 
-    private byte value(int id) {
+    private byte value(int id) {    // value方法,其实就是获取id对应的层数 (1到11)
         return memoryMap[id];
     }
 

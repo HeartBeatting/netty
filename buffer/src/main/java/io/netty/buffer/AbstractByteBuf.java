@@ -56,11 +56,11 @@ public abstract class AbstractByteBuf extends ByteBuf {
     static final ResourceLeakDetector<ByteBuf> leakDetector =
             ResourceLeakDetectorFactory.instance().newResourceLeakDetector(ByteBuf.class);
 
-    int readerIndex;
-    int writerIndex;
-    private int markedReaderIndex;
-    private int markedWriterIndex;
-    private int maxCapacity;
+    int readerIndex;                // 读指针
+    int writerIndex;                // 写指针
+    private int markedReaderIndex;  // 读指针mark
+    private int markedWriterIndex;  // 写指针mark
+    private int maxCapacity;        // 最大容量
 
     protected AbstractByteBuf(int maxCapacity) {
         if (maxCapacity < 0) {
@@ -826,14 +826,14 @@ public abstract class AbstractByteBuf extends ByteBuf {
         }
 
         ByteBuf buf = alloc().buffer(length, maxCapacity);
-        buf.writeBytes(this, readerIndex, length);
+        buf.writeBytes(this, readerIndex, length);  // 从读指针开始, 读取length长度字节.
         readerIndex += length;
         return buf;
     }
 
     @Override
     public ByteBuf readSlice(int length) {
-        ByteBuf slice = slice(readerIndex, length);
+        ByteBuf slice = slice(readerIndex, length); // 读取一个切片
         readerIndex += length;
         return slice;
     }
@@ -1160,12 +1160,12 @@ public abstract class AbstractByteBuf extends ByteBuf {
 
     @Override
     public ByteBuf copy() {
-        return copy(readerIndex, readableBytes());
+        return copy(readerIndex, readableBytes());  // 从读指针开始, 一直读取到末尾, 产生一个拷贝ByteBuf.
     }
 
     @Override
     public ByteBuf duplicate() {
-        return new UnpooledDuplicatedByteBuf(this);
+        return new UnpooledDuplicatedByteBuf(this); // 这个还是共享的字节数据.
     }
 
     @Override

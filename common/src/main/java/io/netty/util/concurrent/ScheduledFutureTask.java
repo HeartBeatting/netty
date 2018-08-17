@@ -23,16 +23,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 @SuppressWarnings("ComparableImplementedButEqualsNotOverridden")
-final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFuture<V> {
+final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFuture<V> {   // NioEventLoop延时任务队列中就是这个任务.
     private static final AtomicLong nextTaskId = new AtomicLong();
-    private static final long START_TIME = System.nanoTime();
+    private static final long START_TIME = System.nanoTime();   // 这个是static变量, 所有任务都是以这个为开始时间点.
 
     static long nanoTime() {
-        return System.nanoTime() - START_TIME;
+        return System.nanoTime() - START_TIME;  // 已经过去了多久
     }
 
     static long deadlineNanos(long delay) {
-        return nanoTime() + delay;
+        return nanoTime() + delay;  // 计算还要多久执行这个任务.
     }
 
     private final long id = nextTaskId.getAndIncrement();
@@ -82,7 +82,7 @@ final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFu
     }
 
     public long delayNanos(long currentTimeNanos) {
-        return Math.max(0, deadlineNanos() - (currentTimeNanos - START_TIME));
+        return Math.max(0, deadlineNanos() - (currentTimeNanos - START_TIME));  // 返回剩余的时间, 最少为0
     }
 
     @Override
@@ -97,12 +97,12 @@ final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFu
         }
 
         ScheduledFutureTask<?> that = (ScheduledFutureTask<?>) o;
-        long d = deadlineNanos() - that.deadlineNanos();
+        long d = deadlineNanos() - that.deadlineNanos();    // 优先级队列比较的就是deadlineNanos
         if (d < 0) {
             return -1;
         } else if (d > 0) {
             return 1;
-        } else if (id < that.id) {
+        } else if (id < that.id) {      // 时间一致的按创建顺序.
             return -1;
         } else if (id == that.id) {
             throw new Error();

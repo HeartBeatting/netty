@@ -655,7 +655,7 @@ public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     @Override
-    protected void deallocate() {
+    protected void deallocate() {   // 没有池化的直接内存直接用反射调用cleaner的clean方法回收直接内存.
         ByteBuffer buffer = this.buffer;
         if (buffer == null) {
             return;

@@ -37,7 +37,7 @@ final class CleanerJava6 implements Cleaner {
 
     static {
         long fieldOffset = -1;
-        Method clean = null;
+        Method clean = null;    // netty回收直接内存时通过反射的方式,获取到直接内存的cleaner属性域句柄,反射调用cleaner的clean方法可以回收.
         Throwable error = null;
         if (PlatformDependent0.hasUnsafe()) {
             ByteBuffer direct = ByteBuffer.allocateDirect(1);

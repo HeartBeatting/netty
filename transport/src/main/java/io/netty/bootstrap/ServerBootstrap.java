@@ -251,11 +251,11 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                 child.attr((AttributeKey<Object>) e.getKey()).set(e.getValue());
             }
 
-            try {
+            try {   // 这里将channel注册到EventLoop上, 注册成功后, 对future加上一个listener回调函数.
                 childGroup.register(child).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
-                        if (!future.isSuccess()) {
+                        if (!future.isSuccess()) {  // 这里的回调就是,如果register操作失败,就强制关闭child(channel).
                             forceClose(child, future.cause());
                         }
                     }

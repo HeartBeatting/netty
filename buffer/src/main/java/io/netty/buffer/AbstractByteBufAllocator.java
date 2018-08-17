@@ -36,7 +36,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
             case SIMPLE:
                 leak = AbstractByteBuf.leakDetector.track(buf);
                 if (leak != null) {
-                    buf = new SimpleLeakAwareByteBuf(buf, leak);
+                    buf = new SimpleLeakAwareByteBuf(buf, leak);    // 装饰器模式, 包装leak内存泄漏检测器.
                 }
                 break;
             case ADVANCED:

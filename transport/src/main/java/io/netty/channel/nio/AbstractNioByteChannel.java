@@ -36,7 +36,7 @@ import java.nio.channels.SelectionKey;
 
 /**
  * {@link AbstractNioChannel} base class for {@link Channel}s that operate on bytes.
- */
+ */ // 用于处理byte的nio channel
 public abstract class AbstractNioByteChannel extends AbstractNioChannel {
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
     private static final String EXPECTED_TYPES =
@@ -119,8 +119,8 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
             boolean close = false;
             try {
                 do {
-                    byteBuf = allocHandle.allocate(allocator);
-                    allocHandle.lastBytesRead(doReadBytes(byteBuf));
+                    byteBuf = allocHandle.allocate(allocator);      // todo 这里需要结合ByteBuf看下
+                    allocHandle.lastBytesRead(doReadBytes(byteBuf));// todo lastBytesRead方法做了什么
                     if (allocHandle.lastBytesRead() <= 0) {
                         // nothing was read. release the buffer.
                         byteBuf.release();
@@ -129,13 +129,13 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                         break;
                     }
 
-                    allocHandle.incMessagesRead(1);
+                    allocHandle.incMessagesRead(1);     // 这个是用来计数读取的message次数的
                     readPending = false;
-                    pipeline.fireChannelRead(byteBuf);
+                    pipeline.fireChannelRead(byteBuf);  // 通知责任链的下一个
                     byteBuf = null;
                 } while (allocHandle.continueReading());
 
-                allocHandle.readComplete();
+                allocHandle.readComplete();             // allocHandle记录读取的字节个数,调整下一次缓存的大小.
                 pipeline.fireChannelReadComplete();
 
                 if (close) {
@@ -269,10 +269,10 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
     protected final void incompleteWrite(boolean setOpWrite) {
         // Did not write completely.
         if (setOpWrite) {
-            setOpWrite();
+            setOpWrite();   // 设置监听标记为仍然是写,下次可以继续写操作.
         } else {
             // Schedule flush again later so other tasks can be picked up in the meantime
-            Runnable flushTask = this.flushTask;
+            Runnable flushTask = this.flushTask;    // 否则就提交flush任务.
             if (flushTask == null) {
                 flushTask = this.flushTask = new Runnable() {
                     @Override
@@ -329,7 +329,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         }
         final int interestOps = key.interestOps();
         if ((interestOps & SelectionKey.OP_WRITE) != 0) {
-            key.interestOps(interestOps & ~SelectionKey.OP_WRITE);
+            key.interestOps(interestOps & ~SelectionKey.OP_WRITE);  // 写操作完成,清理key的OP_WRITE标志位.
         }
     }
 }

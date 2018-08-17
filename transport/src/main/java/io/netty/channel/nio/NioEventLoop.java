@@ -460,7 +460,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                     } finally {
                         // Ensure we always run tasks.
                         final long ioTime = System.nanoTime() - ioStartTime;
-                        runAllTasks(ioTime * (100 - ioRatio) / ioRatio);
+                        runAllTasks(ioTime * (100 - ioRatio) / ioRatio);    // 保证其他非io任务的时间和io时间都是50% (默认50%)
                     }
                 }
             } catch (Throwable t) {
@@ -566,9 +566,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             }
         }
     }
-
-    private void processSelectedKeysOptimized() {
-        for (int i = 0; i < selectedKeys.size; ++i) {
+    // 这个方法里的是IO操作. 值得注意的是IO操作和非IO操作(比如连接注册)同一时间只有一个在执行,这样就没有线程安全问题了. todo 为什么要这样设计?
+    private void processSelectedKeysOptimized() {   // 这个方法是线程安全的,因为netty中所有的操作如果不是当前线程,都是提交到单线程池执行的
+        for (int i = 0; i < selectedKeys.size; ++i) {   // 这样就保证了线程安全.
             final SelectionKey k = selectedKeys.keys[i];
             // null out entry in the array to allow to have it GC'ed once the Channel close
             // See https://github.com/netty/netty/issues/2363
@@ -596,7 +596,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     }
 
     private void processSelectedKey(SelectionKey k, AbstractNioChannel ch) {
-        final AbstractNioChannel.NioUnsafe unsafe = ch.unsafe();
+        final AbstractNioChannel.NioUnsafe unsafe = ch.unsafe();    // 获取ServerSocketChannel的unsafe对象, 后面的操作都依赖这个unsafe.
         if (!k.isValid()) {
             final EventLoop eventLoop;
             try {
@@ -623,14 +623,14 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             int readyOps = k.readyOps();
             // We first need to call finishConnect() before try to trigger a read(...) or write(...) as otherwise
             // the NIO JDK channel implementation may throw a NotYetConnectedException.
-            if ((readyOps & SelectionKey.OP_CONNECT) != 0) {
+            if ((readyOps & SelectionKey.OP_CONNECT) != 0) {    // connect options
                 // remove OP_CONNECT as otherwise Selector.select(..) will always return without blocking
                 // See https://github.com/netty/netty/issues/924
                 int ops = k.interestOps();
                 ops &= ~SelectionKey.OP_CONNECT;
-                k.interestOps(ops);
+                k.interestOps(ops);     // todo 连接操作就是将标志位设置为 OP_CONNECT
 
-                unsafe.finishConnect();
+                unsafe.finishConnect(); // connect操作需要在调用finishConnect才算真正连接完成.
             }
 
             // Process OP_WRITE first as we may be able to write some queued buffers and so free memory.
@@ -715,7 +715,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     int selectNow() throws IOException {
         try {
-            return selector.selectNow();    // netty的NioEventLoop select操作最终还是依赖jdk的selector
+            return selector.selectNow();    // netty的NioEventLoop select操作最终还是依赖jdk的selector.
         } finally {
             // restore wakeup state if needed
             if (wakenUp.get()) {
@@ -730,7 +730,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             int selectCnt = 0;
             long currentTimeNanos = System.nanoTime();
             long selectDeadLineNanos = currentTimeNanos + delayNanos(currentTimeNanos);
-            for (;;) {
+            for (;;) {  // delayNanos方法中自己维护了一个优先级队列,没有用延时线程池的队列,因为这里想
                 long timeoutMillis = (selectDeadLineNanos - currentTimeNanos + 500000L) / 1000000L;
                 if (timeoutMillis <= 0) {   // <=0代表到时间了
                     if (selectCnt == 0) {   // 还没select
@@ -780,16 +780,16 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                     // timeoutMillis elapsed without anything selected.
                     selectCnt = 1;
                 } else if (SELECTOR_AUTO_REBUILD_THRESHOLD > 0 &&
-                        selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {
+                        selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {     // 默认轮训512次就是死循环了.
                     // The selector returned prematurely many times in a row.
                     // Rebuild the selector to work around the problem.
                     logger.warn(
                             "Selector.select() returned prematurely {} times in a row; rebuilding Selector {}.",
                             selectCnt, selector);
 
-                    rebuildSelector();
+                    rebuildSelector();  // rebuildSelector过程：
                     selector = this.selector;
-
+                    // 对selector进行rebuild后，需要重新执行方法selectNow，检查是否有已ready的selectionKey。
                     // Select again to populate selectedKeys.
                     selector.selectNow();
                     selectCnt = 1;

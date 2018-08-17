@@ -369,7 +369,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
     protected int doReadBytes(ByteBuf byteBuf) throws Exception {
         final RecvByteBufAllocator.Handle allocHandle = unsafe().recvBufAllocHandle();
         allocHandle.attemptedBytesRead(byteBuf.writableBytes());
-        return byteBuf.writeBytes(javaChannel(), allocHandle.attemptedBytesRead());
+        return byteBuf.writeBytes(javaChannel(), allocHandle.attemptedBytesRead()); // todo byteBuf的结构,两个指针,会更快么?
     }
 
     @Override
@@ -387,7 +387,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
     @Override
     protected void doWrite(ChannelOutboundBuffer in) throws Exception {
         for (;;) {
-            int size = in.size();
+            int size = in.size();   // size方法得到ChannelOutboundBuffer中有多少entry
             if (size == 0) {
                 // All written so clear OP_WRITE
                 clearOpWrite();
@@ -401,7 +401,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
             ByteBuffer[] nioBuffers = in.nioBuffers();
             int nioBufferCnt = in.nioBufferCount();
             long expectedWrittenBytes = in.nioBufferSize();
-            SocketChannel ch = javaChannel();
+            SocketChannel ch = javaChannel();   // 这是jdk的nio channel
 
             // Always us nioBuffers() to workaround data-corruption.
             // See https://github.com/netty/netty/issues/2761
@@ -428,7 +428,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
                     }
                     break;
                 default:
-                    for (int i = config().getWriteSpinCount() - 1; i >= 0; i --) {
+                    for (int i = config().getWriteSpinCount() - 1; i >= 0; i --) {  // 根据配置的自选次数,循环写入.
                         final long localWrittenBytes = ch.write(nioBuffers, 0, nioBufferCnt);
                         if (localWrittenBytes == 0) {
                             setOpWrite = true;
@@ -447,7 +447,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
             // Release the fully written buffers, and update the indexes of the partially written buffer.
             in.removeBytes(writtenBytes);
 
-            if (!done) {
+            if (!done) {    // 如果还没完成,设置标记
                 // Did not write all buffers completely.
                 incompleteWrite(setOpWrite);
                 break;
